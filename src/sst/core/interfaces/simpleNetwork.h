@@ -47,6 +47,7 @@ public:
     SST_ELI_REGISTER_SUBCOMPONENT_API(SST::Interfaces::SimpleNetwork,int)
 
     /** All Addresses can be 64-bit */
+//nid_t是一个64位的整数，也就是一个可以存储64位二进制数的整数变量
     typedef int64_t nid_t;
 #define PRI_NID PRIi64
 
