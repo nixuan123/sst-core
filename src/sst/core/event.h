@@ -131,16 +131,18 @@ public:
     }
 
 #endif
-
+    //重写了基类Activity种的serialize_order方法，用于序列化Rvent对象的特定数据
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
+        //首先，序列化从Activity类继承的成员变量
         Activity::serialize_order(ser);
         ser& delivery_info;
+//如果定义了预处理宏，则还会序列化一系列额外的成员变量
 #ifdef __SST_DEBUG_EVENT_TRACKING__
-        ser& first_comp;
-        ser& first_type;
-        ser& first_port;
-        ser& last_comp;
+        ser& first_comp;//首次发送事件的组件名称
+        ser& first_type;//首次发送事件的组件类型
+        ser& first_port;//首次发送事件组件端口
+        ser& last_comp;//最后接收事件的组件名称
         ser& last_type;
         ser& last_port;
 #endif
@@ -150,9 +152,11 @@ protected:
     /**
      * Generates an ID that is unique across ranks, components and events.
      */
+    //一个受保护的成员函数，生成一个在整个模拟中唯一的标识符，这个标识符跨越
+    //不同的ranks、组件和事件
     id_type generateUniqueId();
 
-
+//final用于声明一些其他类时Event类的朋友，其他类可以直接访问私有变量
 private:
     friend class Link;
     friend class NullEvent;
@@ -161,6 +165,7 @@ private:
 
 
     /** Cause this event to fire */
+    //事件到达其预定的交付时间时触发事件的执行
     void execute(void) override;
 
     /**
@@ -176,16 +181,20 @@ private:
        local links, delivery_info contains the delivery functor.
        @return void
      */
+    //用于设置事件的传递信息
     inline void setDeliveryInfo(LinkId_t tag, uintptr_t delivery_info)
     {
+        //用于设置事件的顺序标签或队列顺序
         setOrderTag(tag);
         this->delivery_info = delivery_info;
     }
 
     /** Gets the link id used for delivery.  For use by SST Core only */
+    //获取用于事件传递的Link对象的指针
     inline Link* getDeliveryLink() { return reinterpret_cast<Link*>(delivery_info); }
 
     /** Gets the link id associated with this event.  For use by SST Core only */
+    //用于获取与事件关联的传递标识符
     inline LinkId_t getTag(void) const { return getOrderTag(); }
 
 
@@ -217,6 +226,7 @@ private:
 /**
  * Empty Event.  Does nothing.
  */
+//定义了一个空事件
 class EmptyEvent : public Event
 {
 public:
@@ -224,16 +234,19 @@ public:
     ~EmptyEvent() {}
 
 private:
+    //这个宏是用于实现序列化接口的，它表明EmptyEvent类或者其派生类
+    //需要实现某些序列化相关的虚函数，以便将对象转换为可以存储或传输的形式
     ImplementSerializable(SST::EmptyEvent)
 };
-
+//用于存储事件处理器相关的元数据，这个类提供了一些额外的信息，如组件的ID、名称
+//、类型和端口名称
 class EventHandlerMetaData : public HandlerMetaData
 {
 public:
-    const ComponentId_t comp_id;
-    const std::string   comp_name;
-    const std::string   comp_type;
-    const std::string   port_name;
+    const ComponentId_t comp_id;//用于存储组件的唯一标识符
+    const std::string   comp_name;//一个字符串型变量，用于存储组件的名称
+    const std::string   comp_type;//用于存储组件的类型
+    const std::string   port_name;//用于存储组件的端口名称
 
     EventHandlerMetaData(
         ComponentId_t id, const std::string& cname, const std::string& ctype, const std::string& pname) :
