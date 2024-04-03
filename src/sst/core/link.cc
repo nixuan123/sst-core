@@ -34,15 +34,18 @@ namespace SST {
  * Null Event.  Used when nullptr is passed into any of the send
  * functions.  On delivery, it will delete itself and return nullptr.
  */
-
+//定义了一个空事件，即不需要执行任何操作的事件对象
 class NullEvent : public Event
 {
 public:
     NullEvent() : Event() {}
     ~NullEvent() {}
-
+    //定义了一个excute函数，他重写了基类Event中的excute函数，在Event中，此函数用于执行事件相关的操作
     void execute(void) override
     {
+        //通过reinterpret_cast将delivery_info成员变量转换为HandlerBase*类型的指针
+        //然后通过此指针调用处理器的某个函数，传递nullptr作为参数，这意味着通知处理器
+        //没有实际的事件数据需要处理
         (*reinterpret_cast<HandlerBase*>(delivery_info))(nullptr);
         delete this;
     }
@@ -65,10 +68,13 @@ public:
             x.first->eventSent(x.second, ev);
         }
     }
-    
+    //将一个性能分析工具添加到一个集合当中，这个集合是用于监控和分析事件处理器的性能
     void addProfileTool(SST::Profile::EventHandlerProfileTool* tool, const EventHandlerMetaData& mdata)
     {
+        //这个tool是用于收集和报告事件处理器性能数据，mdata包含与事件处理相关的元数据信息，如处理器的名称、类型等
         auto key = tool->registerHandler(mdata);
+        //将tool和它的注册键key作为一个make_pair对象添加到tools集合的末尾，tools是一个容器，用于存储已注册
+        //性能分析工具及其对应的键
         tools.push_back(std::make_pair(tool, key));
     }
 
