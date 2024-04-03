@@ -19,7 +19,8 @@
 #include <atomic>
 #include <cinttypes>
 #include <string>
-
+//SST是一个命名空间，用于组织和封装相关的类和函数，这有助于避免名称冲突
+//并提供一个清晰的代码结构
 namespace SST {
 
 class Link;
@@ -31,18 +32,22 @@ class ThreadSync;
  * Base class for Events - Items sent across links to communicate between
  * components.
  */
+//Event类是Activity的派生类，意味着它添加了新的成员或重写了一些函数
 class Event : public Activity
 {
 public:
     /**
        Base handler for event delivery.
      */
+    //定义了一个类型别名HandlerBase，它指向SST的一个事件处理程序的基类，它是一个模板类
+    //用于处理事件传递时的回调函数
     using HandlerBase = SSTHandlerBase<void, Event*>;
 
+    //处理器是一个回调函数，当事件被传递时会被调用，有两种形式的处理器创建
     /**
        Used to create handlers for event delivery.  The callback
        function is expected to be in the form of:
-
+         //对于不涉及静态数据的事件处理器
          void func(Event* event)
 
        In which case, the class is created with:
@@ -50,7 +55,7 @@ public:
          new Event::Handler<classname>(this, &classname::function_name)
 
        Or, to add static data, the callback function is:
-
+         //如果回调函数需要额外的静态数据
          void func(Event* event, dataT data)
 
        and the class is created with:
@@ -58,16 +63,24 @@ public:
          new Event::Handler<classname, dataT>(this, &classname::function_name, data)
      */
     template <typename classT, typename dataT = void>
+    //定义了Handler作为SSTHandler的别名，SSTHandler是一个模板类，用于创建事件处理器
     using Handler = SSTHandler<void, Event*, classT, dataT>;
 
     /** Type definition of unique identifiers */
+    //唯一标识符类型定义id_type,uint64_t和int分别用于存储事件唯一标识符的
+    //高64位和低32位
     typedef std::pair<uint64_t, int> id_type;
     /** Constant, default value for id_types */
+    //常量NO_ID,用于表示一个无效或未设置的事件标识符，它是id_type类型的默认构造值
     static const id_type             NO_ID;
-
+    //Event类的构造函数首先是调用Activity的构造函数
     Event() : Activity(), delivery_info(0)
-    {
+    {   
+        //设置事件的默认优先级位EVENTPRIORITY(值为50，优先级中等)
         setPriority(EVENTPRIORITY);
+//如果预处理宏__SST_DEBUG_EVENT_TRACKING__ 被定义，构造函数还会初始化
+//first_comp 和 last_comp 成员变量为一个空字符串。这些变量用于调试目的，
+//以跟踪事件的传播。
 #if __SST_DEBUG_EVENT_TRACKING__
         first_comp = "";
         last_comp  = "";
@@ -80,30 +93,36 @@ public:
 
 
 #ifdef __SST_DEBUG_EVENT_TRACKING__
-
+    //这个函数用于输出事件的跟踪信息
     virtual void printTrackingInfo(const std::string& header, Output& out) const override
     {
+        //函数使用out.output方法格式化并输出事件的跟踪信息，包括事件首次发送的组件名称
+        //端口和类型，以及最后接收的组件名称、端口和类型
         out.output(
             "%s Event first sent from: %s:%s (type: %s) and last received by %s:%s (type: %s)\n", header.c_str(),
             first_comp.c_str(), first_port.c_str(), first_type.c_str(), last_comp.c_str(), last_port.c_str(),
             last_type.c_str());
     }
-
+    //获取组件信息的函数，这些函数用于获取事件首次发送和最后接收的组件的名称、类型和端口
+    //它们返回对应的字符串引用
     const std::string& getFirstComponentName() { return first_comp; }
     const std::string& getFirstComponentType() { return first_type; }
     const std::string& getFirstPort() { return first_port; }
     const std::string& getLastComponentName() { return last_comp; }
     const std::string& getLastComponentType() { return last_type; }
     const std::string& getLastPort() { return last_port; }
-
+    //添加发送和接收组件信息的函数
     void addSendComponent(const std::string& comp, const std::string& type, const std::string& port)
     {
+        //如果first_comp还没有被设置，他将会传入组件的名称、类型和端口保存起来
         if ( first_comp == "" ) {
             first_comp = comp;
             first_type = type;
             first_port = port;
         }
-    }
+    } 
+    //用于添加事件最后接收的组件信息，他会直接更新last_comp、last_type和last_port成员变量
+    //为传入的组件名称、类型和端口
     void addRecvComponent(const std::string& comp, const std::string& type, const std::string& port)
     {
         last_comp = comp;
