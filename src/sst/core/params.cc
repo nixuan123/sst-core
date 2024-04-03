@@ -24,7 +24,8 @@
 #define SET_NAME_KEYWORD "GLOBAL_SET_NAME"
 
 namespace SST {
-
+//const修饰函数表示不能在函数内部修改传入的参数的值，以便不会改变传入参数对象的状态
+//name是要查找的参数名称，found是一个引用参数，用于返回是否找到了对应的参数
 const std::string&
 Params::getString(const std::string& name, bool& found) const
 {
@@ -39,7 +40,7 @@ Params::getString(const std::string& name, bool& found) const
     found = false;
     return empty;
 }
-
+//返回与Params对象关联的参数数量
 size_t
 Params::size() const
 {
@@ -158,10 +159,11 @@ Params::insert(const Params& params)
         if ( !already_there ) data.push_back(params.data[i]);
     }
 }
-
+//它的作用是返回一个包含所有参数名称的集合
 std::set<std::string>
 Params::getKeys() const
 {
+    //表示一个std::set容器，其中存储的是std::string类型的参数名称
     std::set<std::string> ret;
     for ( auto map : data ) {
         for ( auto value : *map ) {
