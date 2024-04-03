@@ -241,12 +241,15 @@ protected:
 
 private:
     // Data members
+    //用于存储活动的交付时间，记录活动应该在模拟的哪个时间点
     SimTime_t delivery_time;
     // This will hold both the priority (high bits) and the link order
     // (low_bits)
+    //用于存储活动的优先级和链接顺序，高32位用于存储优先级信息，低32位用于存储链接顺序
     uint64_t  priority_order;
     // Used for TimeVortex implementations that don't naturally keep
     // the insertion order
+    //用于管理调度事件，queue_order用来确保活动的顺序性
     uint64_t  queue_order;
 };
 
