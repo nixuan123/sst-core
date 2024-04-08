@@ -58,7 +58,7 @@ public:
      */
     class Request : public SST::Core::Serialization::serializable, SST::Core::Serialization::serializable_type<Request>
     {
-
+    //由于地址会被转为二进制进行传输，所以dest即NodeID需要定义为二进制
     public:
         nid_t  dest;           /*!< Node ID of destination */
         nid_t  src;            /*!< Node ID of source */
@@ -143,7 +143,7 @@ public:
         {
             Request* req = new Request(*this);
             // Copy constructor only makes a shallow copy, need to
-            // clone the event.
+            // clone the event.//构造函数只进行了浅拷贝，还需要对事件进行深拷贝
             if ( payload != nullptr ) req->payload = payload->clone();
             return req;
         }
